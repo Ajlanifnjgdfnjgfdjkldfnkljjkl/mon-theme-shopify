@@ -1,0 +1,137 @@
+{%- comment -%}
+  Landing — Comparatif « Pourquoi l'AYN Thor »
+  Tableau 4 colonnes : critères · produit (colonne mise en avant) · concurrent 1 · concurrent 2.
+
+  Données : metafield JSON custom.comparison_data, sinon blocs « Ligne » de la section.
+  Format du metafield :
+  {
+    "columns": ["AYN Thor", "Steam Deck", "Switch OLED"],
+    "rows": [
+      { "label": "Double écran", "cells": [true, false, false] },
+      { "label": "Prix", "cells": ["[prix]", "569 €", "349,99 €"] }
+    ]
+  }
+  Valeurs : true/false ou « oui »/« non » → ✓ / ✗ · [prix] → prix actuel du produit.
+  Mobile : le tableau défile horizontalement, la colonne des critères reste fixe.
+{%- endcomment -%}
+{%- liquid
+  assign heading_id = 'LpCompareHeading-' | append: section.id
+  assign data = product.metafields.custom.comparison_data.value
+  assign current_price = product.selected_or_first_available_variant.price | money
+
+  assign col_1 = section.settings.column_1
+  assign col_2 = section.settings.column_2
+  assign col_3 = section.settings.column_3
+  if data.columns.size > 0
+    assign col_1 = data.columns[0] | default: col_1
+    assign col_2 = data.columns[1] | default: col_2
+    assign col_3 = data.columns[2] | default: col_3
+  endif
+
+  assign use_metafield = false
+  if data.rows.size > 0
+    assign use_metafield = true
+  endif
+-%}
+<section
+  class="lp-section lp-compare-section{% if section.settings.background == 'alt' %} lp-section--alt{% endif %}"
+  aria-labelledby="{{ heading_id }}"
+>
+  <div class="lp-container">
+    {% render 'lp-section-heading',
+      eyebrow: section.settings.eyebrow,
+      heading: section.settings.heading,
+      id: heading_id
+    %}
+
+    <div class="lp-compare" role="region" aria-labelledby="{{ heading_id }}" tabindex="0">
+      <table class="lp-compare__table">
+        <thead>
+          <tr>
+            <th scope="col" class="lp-compare__label"><span class="lp-visually-hidden">Critère</span></th>
+            <th scope="col" class="lp-compare__highlight lp-compare__head--highlight">
+              {%- if section.settings.show_product_image and product.featured_media -%}
+                {{ product.featured_media.preview_image | image_url: width: 120 | image_tag: alt: '', loading: 'lazy', class: 'lp-compare__thumb', widths: '60, 120', sizes: '44px' }}
+              {%- endif -%}
+              {{ col_1 }}
+            </th>
+            <th scope="col">{{ col_2 }}</th>
+            <th scope="col">{{ col_3 }}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {%- if use_metafield -%}
+            {%- for row in data.rows -%}
+              <tr>
+                <th scope="row" class="lp-compare__label">{{ row.label }}</th>
+                <td class="lp-compare__highlight">{% render 'lp-compare-cell', value: row.cells[0], price: current_price %}</td>
+                <td>{% render 'lp-compare-cell', value: row.cells[1], price: current_price %}</td>
+                <td>{% render 'lp-compare-cell', value: row.cells[2], price: current_price %}</td>
+              </tr>
+            {%- endfor -%}
+          {%- else -%}
+            {%- for block in section.blocks -%}
+              <tr {{ block.shopify_attributes }}>
+                <th scope="row" class="lp-compare__label">{{ block.settings.label }}</th>
+                <td class="lp-compare__highlight">{% render 'lp-compare-cell', value: block.settings.value_1, price: current_price %}</td>
+                <td>{% render 'lp-compare-cell', value: block.settings.value_2, price: current_price %}</td>
+                <td>{% render 'lp-compare-cell', value: block.settings.value_3, price: current_price %}</td>
+              </tr>
+            {%- endfor -%}
+          {%- endif -%}
+        </tbody>
+      </table>
+    </div>
+    {%- if section.settings.footnote != blank -%}
+      <p class="lp-compare__note">{{ section.settings.footnote }}</p>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Landing — Comparatif",
+  "tag": "div",
+  "class": "lp-section-compare",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "Face à la concurrence" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "Pourquoi l'AYN Thor" },
+    { "type": "paragraph", "content": "Les lignes viennent du metafield JSON custom.comparison_data s'il est renseigné, sinon des blocs ci-dessous. Valeurs « oui » / « non » → ✓ / ✗, [prix] → prix du produit." },
+    { "type": "text", "id": "column_1", "label": "Colonne mise en avant", "default": "AYN Thor" },
+    { "type": "text", "id": "column_2", "label": "Concurrent 1", "default": "Steam Deck" },
+    { "type": "text", "id": "column_3", "label": "Concurrent 2", "default": "Switch OLED" },
+    { "type": "checkbox", "id": "show_product_image", "label": "Vignette produit dans l'en-tête", "default": true },
+    { "type": "text", "id": "footnote", "label": "Note de bas de tableau", "default": "Prix publics constatés des concurrents, à titre indicatif." },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        { "value": "default", "label": "Principal" },
+        { "value": "alt", "label": "Alterné (gris clair)" }
+      ],
+      "default": "alt"
+    }
+  ],
+  "blocks": [
+    {
+      "type": "row",
+      "name": "Ligne",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Critère", "default": "Double écran" },
+        { "type": "text", "id": "value_1", "label": "Colonne mise en avant", "default": "oui" },
+        { "type": "text", "id": "value_2", "label": "Concurrent 1", "default": "non" },
+        { "type": "text", "id": "value_3", "label": "Concurrent 2", "default": "non" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Landing — Comparatif",
+      "blocks": [
+        { "type": "row", "settings": { "label": "Double écran", "value_1": "oui", "value_2": "non", "value_3": "non" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

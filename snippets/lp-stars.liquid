@@ -1,0 +1,27 @@
+{%- comment -%}
+  Note en étoiles (remplissage partiel, ex. 4,7 → 94 %).
+
+  Accepte :
+  - rating {Number} : note sur 5 (défaut : 5)
+  - size {Number} : taille d'une étoile en px (défaut : 16)
+  - label {Boolean} : ajoute un libellé accessible (défaut : true)
+
+  Usage : {% render 'lp-stars', rating: 4.7, size: 18 %}
+{%- endcomment -%}
+{%- liquid
+  assign lp_rating = rating | default: 5 | plus: 0
+  if lp_rating > 5
+    assign lp_rating = 5
+  endif
+  assign lp_fill = lp_rating | times: 20.0 | round: 1
+  assign lp_size = size | default: 16
+  capture lp_star
+    render 'lp-icon', icon: 'star'
+  endcapture
+-%}
+<span class="lp-stars" style="--lp-star-size: {{ lp_size }}px;"
+  {%- unless label == false %} role="img" aria-label="{{ lp_rating | replace: '.', ',' }} sur 5"{% else %} aria-hidden="true"{% endunless -%}
+>
+  <span class="lp-stars__row lp-stars__row--base">{{ lp_star }}{{ lp_star }}{{ lp_star }}{{ lp_star }}{{ lp_star }}</span>
+  <span class="lp-stars__row lp-stars__row--fill" style="width: {{ lp_fill }}%;">{{ lp_star }}{{ lp_star }}{{ lp_star }}{{ lp_star }}{{ lp_star }}</span>
+</span>

@@ -1,0 +1,116 @@
+{%- comment -%}
+  Landing — Section vidéo « La DS du futur, entre vos mains »
+  Sur-titre + H2 + vidéo en lecture auto (muette, en boucle, chargée au scroll) + badge de note.
+
+  Le badge de note utilise les données d'avis du produit (snippets/lp-review-value.liquid).
+  Pour afficher un widget officiel (ex. TrustBox Trustpilot), collez son code dans « Widget d'avis ».
+{%- endcomment -%}
+{%- liquid
+  capture review_score
+    render 'lp-review-value', product: product, part: 'score'
+  endcapture
+  capture review_score_raw
+    render 'lp-review-value', product: product, part: 'score_raw'
+  endcapture
+  capture review_count
+    render 'lp-review-value', product: product, part: 'count'
+  endcapture
+  assign review_score = review_score | strip
+  assign review_count = review_count | strip
+  assign heading_id = 'LpVideoHeading-' | append: section.id
+-%}
+<section
+  class="lp-section lp-video-hero{% if section.settings.background == 'alt' %} lp-section--alt{% endif %}"
+  aria-labelledby="{{ heading_id }}"
+>
+  <div class="lp-container">
+    {% render 'lp-section-heading',
+      eyebrow: section.settings.eyebrow,
+      heading: section.settings.heading,
+      text: section.settings.text,
+      id: heading_id
+    %}
+
+    {%- if section.settings.video != blank or section.settings.video_url != blank or section.settings.poster != blank or request.design_mode -%}
+      <div class="lp-video-hero__media lp-video-hero__media--{{ section.settings.width }}" style="--lp-ratio: {{ section.settings.ratio }};">
+        {% render 'lp-video',
+          video: section.settings.video,
+          url: section.settings.video_url,
+          poster: section.settings.poster,
+          max_height: 1080,
+          poster_width: 1600,
+          label: section.settings.heading
+        %}
+      </div>
+    {%- endif -%}
+
+    {%- if section.settings.review_widget != blank -%}
+      <div class="lp-review-badge lp-review-badge--widget">{{ section.settings.review_widget }}</div>
+    {%- elsif section.settings.show_rating and review_score != blank and review_count != blank -%}
+      <div class="lp-review-badge">
+        {%- if section.settings.rating_logo != blank -%}
+          {{ section.settings.rating_logo | image_url: width: 240 | image_tag: alt: section.settings.rating_logo.alt, loading: 'lazy', class: 'lp-review-badge__logo', widths: '120, 240', sizes: '120px' }}
+        {%- endif -%}
+        {% render 'lp-stars', rating: review_score_raw, size: 20 %}
+        <span class="lp-review-badge__text">
+          {{- section.settings.rating_text | replace: '[note]', review_score | replace: '[avis]', review_count -}}
+        </span>
+      </div>
+    {%- endif -%}
+  </div>
+</section>
+
+{% schema %}
+{
+  "name": "Landing — Vidéo",
+  "tag": "div",
+  "class": "lp-section-video-hero",
+  "settings": [
+    { "type": "text", "id": "eyebrow", "label": "Sur-titre", "default": "En action" },
+    { "type": "text", "id": "heading", "label": "Titre", "default": "La DS du futur, entre vos mains" },
+    { "type": "text", "id": "text", "label": "Texte (optionnel)" },
+    { "type": "header", "content": "Vidéo" },
+    { "type": "video", "id": "video", "label": "Vidéo (hébergée sur Shopify)" },
+    { "type": "text", "id": "video_url", "label": "…ou URL MP4 (CDN Shopify)", "info": "Utilisée si aucune vidéo n'est sélectionnée. Ex. https://cdn.shopify.com/videos/c/o/v/xxxx.mp4" },
+    { "type": "image_picker", "id": "poster", "label": "Image d'affiche (optionnel)" },
+    {
+      "type": "select",
+      "id": "width",
+      "label": "Largeur",
+      "options": [
+        { "value": "full", "label": "Pleine largeur du contenu" },
+        { "value": "narrow", "label": "80 % centrée" }
+      ],
+      "default": "narrow"
+    },
+    {
+      "type": "select",
+      "id": "ratio",
+      "label": "Format",
+      "options": [
+        { "value": "16 / 9", "label": "16:9" },
+        { "value": "4 / 3", "label": "4:3" },
+        { "value": "1 / 1", "label": "Carré" },
+        { "value": "9 / 16", "label": "Vertical 9:16" }
+      ],
+      "default": "16 / 9"
+    },
+    {
+      "type": "select",
+      "id": "background",
+      "label": "Fond",
+      "options": [
+        { "value": "default", "label": "Principal" },
+        { "value": "alt", "label": "Alterné (gris clair)" }
+      ],
+      "default": "default"
+    },
+    { "type": "header", "content": "Badge de note" },
+    { "type": "checkbox", "id": "show_rating", "label": "Afficher la note du produit", "default": true, "info": "Données : metafields custom.review_score / custom.review_count (ou reviews.rating de votre app d'avis)." },
+    { "type": "text", "id": "rating_text", "label": "Texte", "default": "<strong>[note]/5</strong> basé sur [avis] avis" },
+    { "type": "image_picker", "id": "rating_logo", "label": "Logo de la plateforme d'avis (optionnel)", "info": "N'utilisez le logo d'une plateforme (ex. Trustpilot) que si la note affichée provient réellement de cette plateforme." },
+    { "type": "html", "id": "review_widget", "label": "Widget d'avis (optionnel)", "info": "Code officiel d'un widget (ex. TrustBox Trustpilot). Remplace le badge ci-dessus." }
+  ],
+  "presets": [{ "name": "Landing — Vidéo" }]
+}
+{% endschema %}

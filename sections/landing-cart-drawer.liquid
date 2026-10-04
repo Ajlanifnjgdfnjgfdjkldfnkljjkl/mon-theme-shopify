@@ -1,0 +1,134 @@
+{%- comment -%}
+  Landing — Panier coulissant (s'ouvre par la droite)
+  Rendu serveur initial + mise à jour AJAX (/cart/add.js, /cart.js, /cart/change.js) via <lp-cart-drawer>.
+  Ouverture : tout élément [data-lp-cart-open] · événement document « lp:cart:refresh ».
+{%- endcomment -%}
+{%- liquid
+  capture review_score
+    render 'lp-review-value', product: product, part: 'score'
+  endcapture
+  capture review_count
+    render 'lp-review-value', product: product, part: 'count'
+  endcapture
+  assign review_score = review_score | strip
+  assign review_count = review_count | strip
+
+  assign proof_text = section.settings.proof_text
+  if review_score == blank or review_count == blank
+    if proof_text contains '[note]' or proof_text contains '[avis]'
+      assign proof_text = section.settings.proof_text_fallback
+    endif
+  endif
+  assign proof_text = proof_text | replace: '[note]', review_score | replace: '[avis]', review_count
+-%}
+<lp-cart-drawer
+  class="lp-layer lp-cart-root"
+  data-reserve-minutes="{{ section.settings.reserve_minutes }}"
+  data-show-reserve="{{ section.settings.show_reserve }}"
+>
+  <div class="lp-overlay" data-lp-cart-close></div>
+  <div class="lp-drawer lp-cart" role="dialog" aria-modal="true" aria-labelledby="LpCartTitle" tabindex="-1" data-lp-cart-panel>
+    <div class="lp-drawer__header">
+      <h2 class="lp-drawer__title" id="LpCartTitle">{{ section.settings.title }}</h2>
+      <button type="button" class="lp-icon-btn" data-lp-cart-close aria-label="Fermer le panier">
+        {% render 'lp-icon', icon: 'close' %}
+      </button>
+    </div>
+
+    {%- if proof_text != blank -%}
+      <p class="lp-cart__proof">
+        {% render 'lp-icon', icon: 'star' %}
+        <span>{{ proof_text }}</span>
+      </p>
+    {%- endif -%}
+
+    {%- if section.settings.show_reserve -%}
+      <p class="lp-cart__reserve" data-lp-cart-reserve hidden>
+        {% render 'lp-icon', icon: 'clock' %}
+        <span>{{ section.settings.reserve_text }} <strong class="lp-tabular" data-lp-cart-timer>{{ section.settings.reserve_minutes }}:00</strong></span>
+      </p>
+    {%- endif -%}
+
+    <div class="lp-cart__body" data-lp-cart-body>
+      <div class="lp-cart__empty" data-lp-cart-empty {% if cart.item_count > 0 %}hidden{% endif %}>
+        <span class="lp-cart__empty-icon">{% render 'lp-icon', icon: 'cart' %}</span>
+        <p class="lp-cart__empty-title">{{ section.settings.empty_text }}</p>
+        <a href="{{ section.settings.empty_link | default: '#produit' }}" class="lp-cart__empty-link" data-lp-cart-close>
+          {{- section.settings.empty_link_label -}}
+        </a>
+      </div>
+
+      <ul class="lp-cart__items" role="list" data-lp-cart-items>
+        {%- for item in cart.items -%}
+          {% render 'lp-cart-item', item: item %}
+        {%- endfor -%}
+      </ul>
+    </div>
+
+    <div class="lp-cart__footer" data-lp-cart-footer {% if cart.item_count == 0 %}hidden{% endif %}>
+      {%- if section.settings.perk_1 != blank or section.settings.perk_2 != blank -%}
+        <div class="lp-cart__perks">
+          {%- if section.settings.perk_1 != blank -%}
+            <span class="lp-cart__perk">{% render 'lp-icon', icon: 'truck' %}{{ section.settings.perk_1 }}</span>
+          {%- endif -%}
+          {%- if section.settings.perk_2 != blank -%}
+            <span class="lp-cart__perk">{% render 'lp-icon', icon: 'gift' %}{{ section.settings.perk_2 }}</span>
+          {%- endif -%}
+        </div>
+      {%- endif -%}
+
+      <div class="lp-cart__line">
+        <span>{{ section.settings.subtotal_label }}</span>
+        <strong class="lp-cart__subtotal" data-lp-cart-subtotal>{{ cart.total_price | money }}</strong>
+      </div>
+      {%- if section.settings.shipping_text != blank -%}
+        <div class="lp-cart__line lp-cart__line--muted">
+          <span>{{ section.settings.shipping_label }}</span>
+          <span class="lp-cart__free">{{ section.settings.shipping_text }}</span>
+        </div>
+      {%- endif -%}
+
+      <form action="{{ routes.cart_url }}" method="post" class="lp-cart__checkout">
+        <button type="submit" name="checkout" class="lp-btn lp-btn--block">
+          {% render 'lp-icon', icon: 'lock' %}
+          {{ section.settings.checkout_label }}
+        </button>
+      </form>
+
+      {%- if section.settings.guarantee_text != blank -%}
+        <p class="lp-cart__guarantee">{{ section.settings.guarantee_text }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</lp-cart-drawer>
+
+{% schema %}
+{
+  "name": "Landing — Panier",
+  "tag": "div",
+  "class": "lp-section-cart",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "text", "id": "title", "label": "Titre", "default": "PANIER" },
+    { "type": "text", "id": "proof_text", "label": "Mention de confiance", "default": "Noté [note]/5 · + [avis] avis · Expédié sous 24h", "info": "[note] / [avis] = données d'avis du produit." },
+    { "type": "text", "id": "proof_text_fallback", "label": "Mention si aucune note", "default": "Expédié sous 24h" },
+    { "type": "header", "content": "Minuteur" },
+    { "type": "checkbox", "id": "show_reserve", "label": "Afficher le minuteur", "default": true },
+    { "type": "text", "id": "reserve_text", "label": "Texte", "default": "Votre panier est réservé pendant" },
+    { "type": "range", "id": "reserve_minutes", "label": "Durée", "min": 5, "max": 60, "step": 5, "unit": "min", "default": 15 },
+    { "type": "header", "content": "Panier vide" },
+    { "type": "text", "id": "empty_text", "label": "Texte", "default": "Votre panier est vide" },
+    { "type": "text", "id": "empty_link_label", "label": "Lien", "default": "Profitez du destockage" },
+    { "type": "text", "id": "empty_link", "label": "URL du lien", "default": "#produit" },
+    { "type": "header", "content": "Récapitulatif" },
+    { "type": "text", "id": "perk_1", "label": "Avantage 1", "default": "Livraison offerte" },
+    { "type": "text", "id": "perk_2", "label": "Avantage 2", "default": "Cadeau inclus" },
+    { "type": "text", "id": "subtotal_label", "label": "Libellé sous-total", "default": "Sous-total" },
+    { "type": "text", "id": "shipping_label", "label": "Libellé livraison", "default": "Livraison" },
+    { "type": "text", "id": "shipping_text", "label": "Valeur livraison", "default": "Offerte" },
+    { "type": "text", "id": "checkout_label", "label": "Bouton de commande", "default": "Passer ma commande" },
+    { "type": "text", "id": "guarantee_text", "label": "Mention sous le bouton", "default": "Satisfait ou remboursé 30 jours · Paiements sécurisés" }
+  ],
+  "presets": [{ "name": "Landing — Panier" }]
+}
+{% endschema %}

@@ -1,0 +1,69 @@
+{%- comment -%}
+  Vidéo muette en lecture automatique, chargée au scroll (custom element <lp-video>, assets/landing.js) :
+  la source n'est injectée qu'à l'approche du viewport, et la lecture est mise en pause hors écran.
+
+  Accepte :
+  - video {Object} : vidéo Shopify (réglage de type « video »)
+  - url {String} : URL MP4 directe (CDN Shopify), utilisée si aucune vidéo n'est choisie
+  - poster {Object} : image d'affiche (optionnel, sinon aperçu de la vidéo)
+  - max_height {Number} : hauteur max. de la source MP4 retenue (défaut : 1080)
+  - poster_width {Number} : largeur de l'affiche (défaut : 1200)
+  - class {String} : classes CSS du wrapper
+  - label {String} : libellé accessible
+
+  Usage : {% render 'lp-video', video: section.settings.video, url: section.settings.video_url, poster: section.settings.poster %}
+{%- endcomment -%}
+{%- liquid
+  assign lp_max_height = max_height | default: 1080
+  assign lp_src = ''
+  assign lp_type = 'video/mp4'
+  assign lp_best_height = 0
+
+  if video != blank
+    for source in video.sources
+      if source.format == 'mp4' and source.height <= lp_max_height and source.height > lp_best_height
+        assign lp_src = source.url
+        assign lp_type = source.mime_type
+        assign lp_best_height = source.height
+      endif
+    endfor
+    if lp_src == blank
+      for source in video.sources
+        if source.format == 'mp4'
+          assign lp_src = source.url
+          assign lp_type = source.mime_type
+          break
+        endif
+      endfor
+    endif
+  endif
+
+  if lp_src == blank and url != blank
+    assign lp_src = url
+  endif
+
+  assign lp_poster = poster
+  if lp_poster == blank and video != blank
+    assign lp_poster = video.preview_image
+  endif
+  assign lp_poster_width = poster_width | default: 1200
+-%}
+<lp-video class="lp-video {{ class }}">
+  {%- if lp_src != blank -%}
+    <video
+      muted
+      loop
+      playsinline
+      preload="none"
+      disablepictureinpicture
+      {% if lp_poster != blank %}poster="{{ lp_poster | image_url: width: lp_poster_width }}"{% endif %}
+      {% if label != blank %}aria-label="{{ label | escape }}"{% endif %}
+    >
+      <source data-src="{{ lp_src }}" type="{{ lp_type }}">
+    </video>
+  {%- elsif lp_poster != blank -%}
+    {{ lp_poster | image_url: width: lp_poster_width | image_tag: loading: 'lazy', alt: label }}
+  {%- else -%}
+    {{ 'lifestyle-1' | placeholder_svg_tag: 'lp-placeholder' }}
+  {%- endif -%}
+</lp-video>

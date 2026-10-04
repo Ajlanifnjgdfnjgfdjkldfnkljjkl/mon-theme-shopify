@@ -1,0 +1,33 @@
+{%- comment -%}
+  Cellule du tableau comparatif.
+  oui / yes / true / ✓ → coche verte · non / no / false / ✗ → croix rouge · sinon texte.
+  [prix] est remplacé par le prix de la variante sélectionnée.
+
+  Accepte :
+  - value {String|Boolean}
+  - highlight {Boolean} : colonne mise en avant
+  - price {String} : prix formaté pour [prix]
+{%- endcomment -%}
+{%- liquid
+  assign lp_raw = value | append: '' | strip
+  assign lp_key = lp_raw | downcase
+  assign lp_kind = 'text'
+  case lp_key
+    when 'oui', 'yes', 'true', '✓', '✔', 'v'
+      assign lp_kind = 'yes'
+    when 'non', 'no', 'false', '✗', '✕', 'x', '×'
+      assign lp_kind = 'no'
+    when ''
+      assign lp_kind = 'empty'
+  endcase
+-%}
+{%- case lp_kind -%}
+  {%- when 'yes' -%}
+    <span class="lp-compare__icon lp-compare__icon--yes">{% render 'lp-icon', icon: 'check' %}<span class="lp-visually-hidden">Oui</span></span>
+  {%- when 'no' -%}
+    <span class="lp-compare__icon lp-compare__icon--no">{% render 'lp-icon', icon: 'cross' %}<span class="lp-visually-hidden">Non</span></span>
+  {%- when 'empty' -%}
+    <span class="lp-compare__empty" aria-label="Non communiqué">—</span>
+  {%- else -%}
+    <span class="lp-compare__text">{{ lp_raw | replace: '[prix]', price }}</span>
+{%- endcase -%}

@@ -1,0 +1,78 @@
+<!doctype html>
+{%- comment -%}
+  Layout « landing » — page produit single-product.
+
+  Utilisé par templates/product.landing.json ("layout": "landing").
+  - Garde les polices et les variables CSS d'Horizon (fonts, theme-styles-variables, color-palette)
+    mais ne charge PAS base.css ni le JS d'Horizon : la page reste légère (objectif Lighthouse 90+).
+  - CSS critique inline (snippets/lp-critical-css.liquid), reste du CSS chargé sans bloquer le rendu.
+  - En-tête et pied de page = groupes de sections dédiés, éditables dans l'éditeur de thème.
+{%- endcomment -%}
+<html class="no-js{% if request.design_mode %} shopify-design-mode{% endif %}" lang="{{ request.locale.iso_code }}">
+  <head>
+    {%- render 'meta-tags' -%}
+
+    {%- if settings.favicon != blank -%}
+      <link rel="icon" type="image/png" href="{{ settings.favicon | image_url: width: 32, height: 32 }}">
+    {%- endif -%}
+
+    <link rel="preconnect" href="https://cdn.shopify.com" crossorigin>
+    {%- comment -%} Préchargement des polices du thème + @font-face (font-display: swap) {%- endcomment -%}
+    {%- render 'fonts' -%}
+    {%- render 'theme-styles-variables' -%}
+    {%- render 'color-palette' -%}
+
+    {%- comment -%} CSS critique (au-dessus de la ligne de flottaison) {%- endcomment -%}
+    {%- render 'lp-critical-css' -%}
+
+    {%- comment -%} CSS secondaire : non bloquant {%- endcomment -%}
+    <link
+      rel="stylesheet"
+      href="{{ 'landing.css' | asset_url }}"
+      media="print"
+      onload="this.media='all'"
+    >
+    <noscript>{{ 'landing.css' | asset_url | stylesheet_tag }}</noscript>
+
+    <script>
+      document.documentElement.classList.replace('no-js', 'js');
+      window.LP_CONFIG = {
+        moneyFormat: {{ shop.money_format | json }},
+        routes: {
+          cartAdd: {{ routes.cart_add_url | append: '.js' | json }},
+          cartChange: {{ routes.cart_change_url | append: '.js' | json }},
+          cart: {{ routes.cart_url | json }},
+          cartJs: {{ routes.cart_url | append: '.js' | json }}
+        },
+        strings: {
+          addToCart: "Ajouter au panier",
+          soldOut: "Épuisé",
+          unavailable: "Indisponible",
+          adding: "Ajout en cours…",
+          error: "Une erreur est survenue. Merci de réessayer."
+        }
+      };
+    </script>
+    <script src="{{ 'landing.js' | asset_url }}" defer></script>
+
+    {{ content_for_header }}
+  </head>
+
+  <body class="lp-body">
+    <a class="lp-skip-link" href="#MainContent">Aller au contenu</a>
+
+    {%- comment -%}
+      Annonce + navigation : un seul conteneur sticky, de sorte que la barre d'annonce
+      reste toujours visible et que le header se fixe juste en dessous.
+    {%- endcomment -%}
+    <div class="lp-top" data-lp-top>
+      {% sections 'landing-header-group' %}
+    </div>
+
+    <main id="MainContent" class="lp-main" role="main" tabindex="-1">
+      {{ content_for_layout }}
+    </main>
+
+    {% sections 'landing-footer-group' %}
+  </body>
+</html>

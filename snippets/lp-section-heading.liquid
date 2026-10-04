@@ -1,0 +1,25 @@
+{%- comment -%}
+  En-tête de section : sur-titre (« En action ») + H2.
+
+  Accepte :
+  - eyebrow {String}
+  - heading {String}
+  - text {String} : paragraphe optionnel sous le titre
+  - id {String} : id du H2 (aria-labelledby)
+  - align {String} : 'center' (défaut) ou 'left'
+
+  Usage : {% render 'lp-section-heading', eyebrow: section.settings.eyebrow, heading: section.settings.heading %}
+{%- endcomment -%}
+{%- if eyebrow != blank or heading != blank -%}
+  <div class="lp-heading lp-heading--{{ align | default: 'center' }}">
+    {%- if eyebrow != blank -%}
+      <p class="lp-eyebrow">{{ eyebrow }}</p>
+    {%- endif -%}
+    {%- if heading != blank -%}
+      <h2 class="lp-h2"{% if id != blank %} id="{{ id }}"{% endif %}>{{ heading }}</h2>
+    {%- endif -%}
+    {%- if text != blank -%}
+      <p class="lp-heading__text">{{ text }}</p>
+    {%- endif -%}
+  </div>
+{%- endif -%}

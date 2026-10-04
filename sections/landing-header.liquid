@@ -1,0 +1,96 @@
+{%- comment -%}
+  Landing — Navigation
+  Logo à gauche · liens ancres au centre · panier (badge compteur) à droite.
+  Mobile : burger → panneau latéral avec les mêmes liens.
+  Sticky : rendu dans le conteneur .lp-top (layout/landing.liquid), donc fixé sous la barre d'annonce.
+{%- endcomment -%}
+{%- liquid
+  assign logo = section.settings.logo | default: settings.logo
+-%}
+<lp-header class="lp-header" style="--lp-logo-h: {{ section.settings.logo_height }}px; --lp-logo-h-mobile: {{ section.settings.logo_height_mobile }}px;">
+  <div class="lp-container lp-header__inner">
+    <button type="button" class="lp-icon-btn lp-header__burger" data-lp-menu-open aria-controls="LpMenu-{{ section.id }}" aria-expanded="false" aria-label="Ouvrir le menu">
+      {% render 'lp-icon', icon: 'menu' %}
+    </button>
+
+    <a href="{{ section.settings.logo_link | default: '#produit' }}" class="lp-header__logo">
+      {%- if logo != blank -%}
+        {{ logo | image_url: width: 400 | image_tag: alt: shop.name, loading: 'eager', sizes: '200px', widths: '200, 300, 400' }}
+      {%- else -%}
+        {{ shop.name }}
+      {%- endif -%}
+    </a>
+
+    <nav class="lp-header__nav" aria-label="Navigation principale">
+      {%- for block in section.blocks -%}
+        <a href="{{ block.settings.href }}" {{ block.shopify_attributes }}>{{ block.settings.label }}</a>
+      {%- endfor -%}
+    </nav>
+
+    <button type="button" class="lp-icon-btn lp-header__cart" data-lp-cart-open aria-label="Ouvrir le panier">
+      {% render 'lp-icon', icon: 'cart' %}
+      <span class="lp-cart-count" data-lp-cart-count aria-hidden="true">{{ cart.item_count }}</span>
+      <span class="lp-visually-hidden"><span data-lp-cart-count>{{ cart.item_count }}</span> article(s)</span>
+    </button>
+  </div>
+
+  {%- comment -%} Panneau mobile {%- endcomment -%}
+  <div class="lp-layer lp-menu-layer" data-lp-menu-layer>
+    <div class="lp-overlay" data-lp-menu-close></div>
+    <div class="lp-drawer lp-menu" id="LpMenu-{{ section.id }}" role="dialog" aria-modal="true" aria-label="Menu" tabindex="-1">
+      <div class="lp-drawer__header">
+        <span class="lp-drawer__title">Menu</span>
+        <button type="button" class="lp-icon-btn" data-lp-menu-close aria-label="Fermer le menu">
+          {% render 'lp-icon', icon: 'close' %}
+        </button>
+      </div>
+      <nav class="lp-menu__nav" aria-label="Navigation mobile">
+        {%- for block in section.blocks -%}
+          <a href="{{ block.settings.href }}" data-lp-menu-link>
+            {{ block.settings.label }}
+            {% render 'lp-icon', icon: 'chevron-right' %}
+          </a>
+        {%- endfor -%}
+      </nav>
+      {%- if section.settings.menu_footer != blank -%}
+        <p class="lp-menu__footer">{{ section.settings.menu_footer }}</p>
+      {%- endif -%}
+    </div>
+  </div>
+</lp-header>
+
+{% schema %}
+{
+  "name": "Landing — Navigation",
+  "tag": "header",
+  "class": "lp-section-header",
+  "enabled_on": { "groups": ["header"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo", "info": "Format conseillé : .webp ou .png transparent. À défaut, le logo des réglages du thème est utilisé." },
+    { "type": "range", "id": "logo_height", "label": "Hauteur du logo (desktop)", "min": 16, "max": 64, "step": 1, "unit": "px", "default": 34 },
+    { "type": "range", "id": "logo_height_mobile", "label": "Hauteur du logo (mobile)", "min": 16, "max": 48, "step": 1, "unit": "px", "default": 28 },
+    { "type": "text", "id": "logo_link", "label": "Lien du logo", "default": "#produit" },
+    { "type": "text", "id": "menu_footer", "label": "Texte en bas du menu mobile", "default": "Livraison offerte · Retour gratuit 30 jours" }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Lien",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Libellé", "default": "Avis" },
+        { "type": "text", "id": "href", "label": "Lien (ancre ou URL)", "default": "#avis", "info": "Ancres disponibles : #produit, #avis, #faq" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Landing — Navigation",
+      "blocks": [
+        { "type": "link", "settings": { "label": "AYN Thor", "href": "#produit" } },
+        { "type": "link", "settings": { "label": "Avis", "href": "#avis" } },
+        { "type": "link", "settings": { "label": "FAQ", "href": "#faq" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

@@ -1,0 +1,71 @@
+{%- comment -%}
+  Landing — Pied de page
+  Logo centré · accroche · liens (CGV | Mentions légales | Contact) · copyright. Fond sombre.
+{%- endcomment -%}
+{%- liquid
+  assign logo = section.settings.logo | default: settings.logo_inverse | default: settings.logo
+  assign year = 'now' | date: '%Y'
+  assign copyright = section.settings.copyright | replace: '[annee]', year | replace: '[boutique]', shop.name
+-%}
+<footer class="lp-footer">
+  <div class="lp-container lp-footer__inner">
+    <a href="#produit" class="lp-footer__logo" style="--lp-footer-logo-h: {{ section.settings.logo_height }}px;">
+      {%- if logo != blank -%}
+        {{ logo | image_url: width: 360 | image_tag: alt: shop.name, loading: 'lazy', widths: '180, 360', sizes: '180px' }}
+      {%- else -%}
+        {{ shop.name }}
+      {%- endif -%}
+    </a>
+
+    {%- if section.settings.tagline != blank -%}
+      <p class="lp-footer__tagline">{{ section.settings.tagline }}</p>
+    {%- endif -%}
+
+    {%- if section.blocks.size > 0 -%}
+      <nav aria-label="Liens légaux">
+        <ul class="lp-footer__links" role="list">
+          {%- for block in section.blocks -%}
+            <li {{ block.shopify_attributes }}><a href="{{ block.settings.href }}">{{ block.settings.label }}</a></li>
+          {%- endfor -%}
+        </ul>
+      </nav>
+    {%- endif -%}
+
+    <p class="lp-footer__copyright">{{ copyright }}</p>
+  </div>
+</footer>
+
+{% schema %}
+{
+  "name": "Landing — Pied de page",
+  "tag": "div",
+  "class": "lp-section-footer",
+  "enabled_on": { "groups": ["footer"] },
+  "settings": [
+    { "type": "image_picker", "id": "logo", "label": "Logo (version claire)", "info": "À défaut : logo inversé puis logo des réglages du thème." },
+    { "type": "range", "id": "logo_height", "label": "Hauteur du logo", "min": 16, "max": 80, "step": 1, "unit": "px", "default": 32 },
+    { "type": "textarea", "id": "tagline", "label": "Accroche", "default": "Spécialiste en électronique grand public. Produits sélectionnés, testés et expédiés depuis l'Europe." },
+    { "type": "text", "id": "copyright", "label": "Copyright", "default": "© [annee] [boutique]. Tous droits réservés.", "info": "[annee] = année en cours, [boutique] = nom de la boutique." }
+  ],
+  "blocks": [
+    {
+      "type": "link",
+      "name": "Lien",
+      "settings": [
+        { "type": "text", "id": "label", "label": "Libellé", "default": "Contact" },
+        { "type": "text", "id": "href", "label": "Lien", "default": "/pages/contact" }
+      ]
+    }
+  ],
+  "presets": [
+    {
+      "name": "Landing — Pied de page",
+      "blocks": [
+        { "type": "link", "settings": { "label": "CGV", "href": "/policies/terms-of-service" } },
+        { "type": "link", "settings": { "label": "Mentions légales", "href": "/policies/legal-notice" } },
+        { "type": "link", "settings": { "label": "Contact", "href": "/pages/contact" } }
+      ]
+    }
+  ]
+}
+{% endschema %}

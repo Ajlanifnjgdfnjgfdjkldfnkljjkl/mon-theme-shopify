@@ -1,0 +1,17 @@
+{%- comment -%}
+  Compte à rebours HH:MM:SS (mis à jour par assets/landing.js, custom element <lp-countdown>).
+
+  Accepte :
+  - mode {String} : 'midnight' (jusqu'à minuit, heure locale du visiteur) ou 'date' (date fixe)
+  - end_date {String} : date de fin au format ISO 8601 (ex. 2026-10-31T23:59:59+01:00), utilisée si mode = 'date'
+  - class {String} : classes CSS supplémentaires
+
+  Usage : {% render 'lp-countdown', mode: section.settings.countdown_mode, end_date: section.settings.countdown_end %}
+{%- endcomment -%}
+<lp-countdown
+  class="lp-tabular {{ class }}"
+  data-mode="{{ mode | default: 'midnight' }}"
+  {%- if mode == 'date' and end_date != blank %} data-end="{{ end_date | escape }}"{% endif %}
+  role="timer"
+  aria-live="off"
+>00:00:00</lp-countdown>

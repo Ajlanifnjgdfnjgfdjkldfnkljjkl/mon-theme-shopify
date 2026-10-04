@@ -1,0 +1,39 @@
+{%- comment -%}
+  Renvoie (echo) une donnée d'avis du produit, avec repli automatique :
+    1. metafields custom.review_score / custom.review_count (créés pour la landing)
+    2. metafields standards Shopify reviews.rating / reviews.rating_count (apps d'avis : Judge.me, Shopify Product Reviews…)
+
+  Accepte :
+  - product {Object}
+  - part {String} : 'score' (ex. « 4,7 »), 'score_raw' (ex. 4.7) ou 'count' (ex. 860)
+
+  Usage : {% capture lp_score %}{% render 'lp-review-value', product: product, part: 'score' %}{% endcapture %}
+{%- endcomment -%}
+{%- liquid
+  assign lp_score = product.metafields.custom.review_score.value
+  if lp_score == blank
+    assign lp_score = product.metafields.reviews.rating.value.rating
+  endif
+
+  assign lp_count = product.metafields.custom.review_count.value
+  if lp_count == blank
+    assign lp_count = product.metafields.reviews.rating_count.value
+  endif
+
+  if product == blank
+    assign part = 'none'
+  endif
+
+  case part
+    when 'score'
+      if lp_score != blank
+        echo lp_score | plus: 0 | round: 1 | append: '' | replace: '.', ','
+      endif
+    when 'score_raw'
+      if lp_score != blank
+        echo lp_score | plus: 0 | round: 1
+      endif
+    when 'count'
+      echo lp_count
+  endcase
+-%}

@@ -1,0 +1,37 @@
+{
+  "type": "footer",
+  "name": "Landing — Pied de page",
+  "sections": {
+    "footer": {
+      "type": "landing-footer",
+      "blocks": {
+        "link_cgv": { "type": "link", "settings": { "label": "CGV", "href": "/policies/terms-of-service" } },
+        "link_legal": { "type": "link", "settings": { "label": "Mentions légales", "href": "/policies/legal-notice" } },
+        "link_contact": { "type": "link", "settings": { "label": "Contact", "href": "/pages/contact" } }
+      },
+      "block_order": ["link_cgv", "link_legal", "link_contact"],
+      "settings": {
+        "logo_height": 32,
+        "tagline": "Spécialiste en électronique grand public. Produits sélectionnés, testés et expédiés depuis l'Europe.",
+        "copyright": "© [annee] [boutique]. Tous droits réservés."
+      }
+    },
+    "cart": {
+      "type": "landing-cart-drawer",
+      "settings": {
+        "title": "PANIER",
+        "proof_text": "Noté [note]/5 · + [avis] avis · Expédié sous 24h",
+        "show_reserve": true,
+        "reserve_text": "Votre panier est réservé pendant",
+        "reserve_minutes": 15,
+        "empty_text": "Votre panier est vide",
+        "empty_link_label": "Profitez du destockage",
+        "perk_1": "Livraison offerte",
+        "perk_2": "Cadeau inclus",
+        "checkout_label": "Passer ma commande",
+        "guarantee_text": "Satisfait ou remboursé 30 jours · Paiements sécurisés"
+      }
+    }
+  },
+  "order": ["footer", "cart"]
+}

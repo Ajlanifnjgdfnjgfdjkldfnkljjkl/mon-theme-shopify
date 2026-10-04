@@ -1,0 +1,32 @@
+{
+  "type": "header",
+  "name": "Landing — En-tête",
+  "sections": {
+    "announcement": {
+      "type": "landing-announcement-bar",
+      "settings": {
+        "text": "DÉSTOCKAGE DE RENTRÉE",
+        "show_timer": true,
+        "timer_label": "Fin dans",
+        "timer_separator": ":",
+        "countdown_mode": "midnight"
+      }
+    },
+    "header": {
+      "type": "landing-header",
+      "blocks": {
+        "link_product": { "type": "link", "settings": { "label": "AYN Thor", "href": "#produit" } },
+        "link_reviews": { "type": "link", "settings": { "label": "Avis", "href": "#avis" } },
+        "link_faq": { "type": "link", "settings": { "label": "FAQ", "href": "#faq" } }
+      },
+      "block_order": ["link_product", "link_reviews", "link_faq"],
+      "settings": {
+        "logo_height": 34,
+        "logo_height_mobile": 28,
+        "logo_link": "#produit",
+        "menu_footer": "Livraison offerte · Retour gratuit 30 jours"
+      }
+    }
+  },
+  "order": ["announcement", "header"]
+}
